@@ -10,7 +10,7 @@ from .field import (
     IntegerField,
 )
 
-__all__ = ["Configuration", "validators", "ValidationError"]
+__all__ = ["Configuration", "validators", "ValidationError", "ArrayField", "BooleanField", "FloatField", "IntegerField", "ConfigurationField"]
 
 __version__ = get_versions()["version"]
 del get_versions
