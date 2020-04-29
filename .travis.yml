@@ -1,0 +1,53 @@
+language: generic
+os:
+- linux
+- osx
+env:
+  matrix:
+  - PYTHON=3.8
+  - PYTHON=3.7
+  - PYTHON=3.6
+  global:
+    secure: r1iqyjlKwJtaniEn03eJ+ZgyGGlNjydxw3YnY1ZKhO6oE3c6pc73Ve7m60BRpswb8iRhhAPfeltJrjLA94P4uHDwRoyGYyg+0y4WvjrtLWwAMhpV/Zqmga6SatXc9EgOHqI0YM1Aa2dkWcoC3rk2jT2M7/5H/ZJgI4QF7rFhmDR83QB2v0WLBRtThqBatP7Xr/Rx4dp+lvt1wD3DDgQY6Ii1vNmRZJSu9qydrz7z8CEDPWkhE907JtZIbAFqRow+DqdjjbgXeMoDVWnqFK0xKbQ4vsTESP5DUb3OiyrbDQkUCToyZdxWRqnyyPvqExon7ZcvkqYhZEP9A03NM9dKfvsm/dkXw6IkuMIpmk29Jc5eYOIX1Gca00TXHMqI/v7W1RVy+lbaZU6/dBAT+D3zyb+lvA5drv48d4xRGTUDT3E0nag4RrgFxUnqcpLYkCTUDAokkxPwWsn2K0eC2r30VyI4otxk6QeaTmMEMGGj1p1rnYzDdeMs7I0VzueTOGHvvcr2Ult/kblmsD8wJQ8wtOJMeFy36DNMNiPTOml08cpkgqubUDd7dtGi02LTUHr4bIp8QeBE8xrfi0nI9b21yrhXw6W5Xo6He11kZfg3PpJ2e/OqYLB1WQgbhhUflTwsDCOxhTYO/Zyjk83nYiccT7zkenKDkP3XkfF49Ws3dL0=
+sudo: false
+jobs:
+  include:
+  - stage: lint
+    os: linux
+    script:
+    - pip install flake8
+    - make lint
+  - stage: deploy
+    if: tag=~ v.*$
+    os: linux
+    env: PYTHON=3.8
+    script:
+    - pip install twine wheel
+    - python setup.py sdist
+    - twine upload -u mcflugen -p$PYPI_PASS dist/*exconfig*
+before_install:
+- |
+  if [[ $TRAVIS_OS_NAME == "osx" ]]; then
+    brew remove --force $(brew list)
+    brew cleanup -s
+    rm -rf $(brew --cache)
+  fi
+- |
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > $HOME/miniconda.sh
+  else
+    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh > $HOME/miniconda.sh
+  fi
+- bash $HOME/miniconda.sh -b -p $(pwd)/anaconda
+- export PATH="$(pwd)/anaconda/bin:$PATH"
+- hash -r
+- conda config --set always_yes yes --set changeps1 no
+- conda create -n test_env python=$PYTHON
+- source activate test_env
+- conda info -a && conda list
+install:
+- pip install -e .
+script:
+- pip install -r requirements-testing.txt
+- pytest --cov=exconfig --cov-report=xml:$(pwd)/coverage.xml --run-notebook -vvv
+after_success: coveralls
