@@ -1,4 +1,3 @@
-import itertools
 import os
 import pathlib
 import textwrap
@@ -17,7 +16,7 @@ class UnboundField:
         self.args = args
         self.kwargs = kwargs
         self.creation_counter = UnboundField.creation_counter
-        validators = kwargs.get("validators")
+        # validators = kwargs.get("validators")
         # if validators:
         #     self.field_class.check_validators(validators)
 

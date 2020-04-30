@@ -49,5 +49,5 @@ install:
 - pip install -e .
 script:
 - pip install -r requirements-testing.txt
-- pytest --cov=exconfig --cov-report=xml:$(pwd)/coverage.xml --run-notebook -vvv
+- pytest --cov=exconfig --cov-report=xml:$(pwd)/coverage.xml -vvv
 after_success: coveralls
