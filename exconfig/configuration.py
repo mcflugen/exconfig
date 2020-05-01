@@ -133,7 +133,7 @@ class Configuration(ConfigurationBase, metaclass=ConfigurationMeta):
             # attributes with the same names.
             setattr(self, name, field)
 
-        # self.process(data)
+        self.process(data)
 
     @classmethod
     def from_path(cls, path_to_file, fmt="yaml", loader=None):
