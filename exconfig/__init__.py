@@ -6,6 +6,7 @@ from .field import (
     ArrayField,
     BooleanField,
     ConfigurationField,
+    Field,
     FloatField,
     IntegerField,
 )
@@ -15,6 +16,7 @@ __all__ = [
     "BooleanField",
     "Configuration",
     "ConfigurationField",
+    "Field",
     "FloatField",
     "IntegerField",
     "ValidationError",

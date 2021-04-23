@@ -108,11 +108,18 @@ class OneOf:
 
 
 class Path:
+    _ERROR_MESSAGE = {
+        "path-exists": "path already exists ({value})",
+        "path-missing": "path does not exist ({value})",
+        "not-a-directory": "must be a directory ({value})",
+        "not-a-file": "must be a file ({value})",
+    }
+
     def __init__(
         self,
         file_okay: bool = True,
         dir_okay: bool = True,
-        exists: bool = True,
+        exists: Optional[bool] = None,
         message: Optional[str] = None,
     ):
         self._file_okay = file_okay
@@ -124,19 +131,17 @@ class Path:
     def __call__(self, config, value) -> None:
         path = pathlib.Path(value)
 
-        if path.exists() and (
-            not self._exists
-            or (not self._file_okay and path.is_file())
-            or (not self._dir_okay and path.is_dir())
-        ):
-            message = self._message
-            if message is None:
-                if not self._exists:
-                    message = "path already exists ({value})"
-                elif not self._file_okay and path.is_file():
-                    message = "must be a directory ({value})"
-                elif not self._dir_okay and path.is_dir():
-                    message = "must be a file ({value})"
-            raise ValidationError(message.format(value=str(path)))
-        elif not path.exists() and self._exists:
-            raise ValidationError("path must exists".format(value=str(value)))
+        def _render_error(err):
+            return (self._message or self._ERROR_MESSAGE[err]).format(value=str(value))
+
+        if self._exists is not None:
+            if not self._exists and path.exists():
+                raise ValidationError(_render_error("path-exists"))
+            elif self._exists and not path.exists():
+                raise ValidationError(_render_error("path-missing"))
+
+        if path.exists():
+            if not self._file_okay and path.is_file():
+                raise ValidationError(_render_error("not-a-directory"))
+            elif not self._dir_okay and path.is_dir():
+                raise ValidationError(_render_error("not-a-file"))
